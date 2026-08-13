@@ -248,12 +248,21 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);text-align:center;margin-bottom:10px;}
 }
 
 /* ---------- music ---------- */
-.music-grid{display:grid;gap:16px;width:100%;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));}
-.song-card{display:flex;align-items:center;gap:16px;padding:18px 20px;text-decoration:none;transition:transform .3s, border-color .3s;}
-.song-card:hover{transform:translateY(-3px);border-color:var(--rose);}
-.song-emoji{font-size:1.8rem;}
-.song-title{color:var(--text);font-size:0.95rem;font-weight:400;display:block;}
-.song-sub{color:var(--text-dim);font-size:0.75rem;}
+.music-grid{display:grid;gap:20px;width:100%;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));}
+.song-card{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  gap:10px;aspect-ratio:1/1;padding:22px;text-decoration:none;
+  transition:transform .3s, border-color .3s, box-shadow .3s;
+}
+.song-card:hover{transform:translateY(-4px) scale(1.02);border-color:var(--rose);box-shadow:0 16px 34px rgba(209,99,125,0.22);}
+.song-emoji{font-size:2.4rem;}
+.song-tag{
+  font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:#fff;
+  background:linear-gradient(120deg,var(--rose),var(--rose-deep));
+  padding:4px 12px;border-radius:20px;
+}
+.song-title{color:var(--text);font-size:1rem;font-weight:500;display:block;font-family:var(--display);}
+.song-sub{color:var(--text-dim);font-size:0.78rem;line-height:1.4;}
 .playlist-embed{width:100%;border-radius:14px;overflow:hidden;margin-top:28px;border:1px solid var(--line);}
 
 /* ---------- gallery ---------- */
@@ -372,6 +381,8 @@ footer span{color:var(--rose-deep);}
   <div class="nav-pill">
     <a href="#home" class="nav-link">Home</a>
     <span class="nav-sep">✦</span>
+    <a href="#gallery" class="nav-link">Us</a>
+    <span class="nav-sep">✦</span>
     <a href="#weather" class="nav-link">Weather</a>
     <span class="nav-sep">✦</span>
     <a href="#study" class="nav-link">Study</a>
@@ -379,8 +390,6 @@ footer span{color:var(--rose-deep);}
     <a href="#reminders" class="nav-link">Reminders</a>
     <span class="nav-sep">✦</span>
     <a href="#music" class="nav-link">Music</a>
-    <span class="nav-sep">✦</span>
-    <a href="#gallery" class="nav-link">Us</a>
     <span class="nav-sep">✦</span>
     <a href="#letter-section" class="nav-link">Letter</a>
   </div>
@@ -394,6 +403,14 @@ footer span{color:var(--rose-deep);}
   <div class="hero-bow">🎀</div>
   <p class="hero-note" id="heroNote">A small corner of the internet, made just for you.</p>
   <div class="scroll-hint">Scroll ↓</div>
+</section>
+
+<!-- ================= GALLERY ================= -->
+<section id="gallery">
+  <div class="eyebrow">Little moments</div>
+  <h2>Us</h2>
+  <p class="sub">A few of my favorites so far.</p>
+  <div class="gallery-grid reveal" id="galleryGrid"></div>
 </section>
 
 <!-- ================= WEATHER ================= -->
@@ -438,14 +455,6 @@ footer span{color:var(--rose-deep);}
   <p class="sub" id="musicSub">Songs picked with her in mind.</p>
   <div class="music-grid reveal" id="musicGrid"></div>
   <div id="playlistEmbedWrap"></div>
-</section>
-
-<!-- ================= GALLERY ================= -->
-<section id="gallery">
-  <div class="eyebrow">Little moments</div>
-  <h2>Us</h2>
-  <p class="sub">A few of my favorites so far.</p>
-  <div class="gallery-grid reveal" id="galleryGrid"></div>
 </section>
 
 <div class="lightbox" id="lightbox">
@@ -518,11 +527,13 @@ const CONFIG = {
   ],
 
   // --- Music ---
-  // Option A: simple list of songs (title + a link, e.g. YouTube/Spotify track link)
+  // Option A: square tiles — each can be a single "song" or a full "playlist" link
+  // (type just changes the little tag shown on the tile; the url can point
+  // anywhere — a single track or a whole playlist).
   songs: [
-    { title: "Your song #1", note: "the one that reminds me of you", url: "https://open.spotify.com" },
-    { title: "Your song #2", note: "for late-night study sessions", url: "https://open.spotify.com" },
-    { title: "Your song #3", note: "our song", url: "https://open.spotify.com" }
+    { title: "Your song #1", note: "the one that reminds me of you", url: "https://open.spotify.com", type: "song" },
+    { title: "Your song #2", note: "for late-night study sessions", url: "https://open.spotify.com", type: "song" },
+    { title: "Study Playlist", note: "our whole playlist, on shuffle", url: "https://open.spotify.com", type: "playlist" }
   ],
   // Option B (optional): paste a Spotify PLAYLIST embed URL here to show a full embedded
   // player instead of / alongside the list above. Leave empty ("") to skip it.
@@ -733,15 +744,16 @@ document.getElementById('newReminder').addEventListener('keydown', e=>{
 // ---------- music ----------
 function renderMusic(){
   const grid = document.getElementById('musicGrid');
-  grid.innerHTML = CONFIG.songs.map(s => `
+  grid.innerHTML = CONFIG.songs.map(s => {
+    const isPlaylist = s.type === 'playlist';
+    return `
     <a class="song-card card" href="${s.url}" target="_blank" rel="noopener">
-      <div class="song-emoji">🎵</div>
-      <div>
-        <span class="song-title">${s.title}</span>
-        <span class="song-sub">${s.note || ''}</span>
-      </div>
+      <div class="song-tag">${isPlaylist ? 'Playlist' : 'Song'}</div>
+      <div class="song-emoji">${isPlaylist ? '🎧' : '🎵'}</div>
+      <span class="song-title">${s.title}</span>
+      <span class="song-sub">${s.note || ''}</span>
     </a>
-  `).join('');
+  `;}).join('');
 
   if(CONFIG.spotifyEmbedUrl){
     document.getElementById('playlistEmbedWrap').innerHTML = `
