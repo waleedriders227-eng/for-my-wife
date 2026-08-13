@@ -264,7 +264,7 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);text-align:center;margin-bottom:10px;}
 /* ---------- reminders ---------- */
 .reminder-list{width:100%;display:flex;flex-direction:column;gap:12px;}
 .reminder-item{
-  display:flex;align-items:center;gap:14px;padding:16px 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;
 }
 .reminder-item input{width:17px;height:17px;accent-color:var(--rose);cursor:pointer;flex-shrink:0;}
 .reminder-item.done span{opacity:0.4;text-decoration:line-through;}
@@ -469,7 +469,7 @@ footer span{color:var(--rose-deep);}
   <div class="exam-name" id="examName"></div>
   <div class="countdown reveal" id="countdown"></div>
   <div class="subject-grid reveal" id="subjectGrid"></div>
-  <p style="font-size:0.7rem;color:var(--text-dim);margin-top:22px;opacity:0.7;">Add or remove subjects and topics anytime — changes reset when the page is reloaded.</p>
+  <p style="font-size:0.7rem;color:var(--text-dim);margin-top:22px;opacity:0.7;">Add or remove subjects and topics anytime — saved automatically on this device.</p>
 </section>
 
 <!-- ================= REMINDERS ================= -->
@@ -482,7 +482,7 @@ footer span{color:var(--rose-deep);}
     <input type="text" id="newReminder" placeholder="Add a reminder for her…">
     <button id="addReminderBtn">Add</button>
   </div>
-  <p style="font-size:0.7rem;color:var(--text-dim);margin-top:14px;opacity:0.7;">Checks reset when the page is reloaded.</p>
+  <p style="font-size:0.7rem;color:var(--text-dim);margin-top:14px;opacity:0.7;">Saved automatically on this device.</p>
 </section>
 
 <!-- ================= MUSIC ================= -->
@@ -698,6 +698,17 @@ function initWeather(){
 initWeather();
 document.getElementById('refreshWeather').addEventListener('click', initWeather);
 
+// ---------- local persistence ----------
+function saveLocal(key, data){
+  try{ localStorage.setItem(key, JSON.stringify(data)); }catch(e){ /* storage unavailable */ }
+}
+function loadLocal(key, fallback){
+  try{
+    const v = localStorage.getItem(key);
+    return v !== null ? JSON.parse(v) : fallback;
+  }catch(e){ return fallback; }
+}
+
 // ---------- study / countdown ----------
 document.getElementById('examName').textContent = CONFIG.examName;
 function renderCountdown(){
@@ -757,6 +768,7 @@ function renderSubjects(){
           card.querySelector('[data-pct]').textContent = p+'%';
           card.querySelector('[data-fill]').style.width = p+'%';
           renderTopics();
+          saveLocal('forher_subjects', CONFIG.subjects);
         });
         row.querySelector('.topic-del').addEventListener('click', ()=>{
           subj.topics = subj.topics.filter(t=>t!==topic);
@@ -764,6 +776,7 @@ function renderSubjects(){
           card.querySelector('[data-pct]').textContent = p+'%';
           card.querySelector('[data-fill]').style.width = p+'%';
           renderTopics();
+          saveLocal('forher_subjects', CONFIG.subjects);
         });
         topicsWrap.appendChild(row);
       });
@@ -779,6 +792,7 @@ function renderSubjects(){
         card.querySelector('[data-pct]').textContent = p+'%';
         card.querySelector('[data-fill]').style.width = p+'%';
         renderTopics();
+        saveLocal('forher_subjects', CONFIG.subjects);
       }
     });
     card.querySelector('[data-topic-input]').addEventListener('keydown', e=>{
@@ -786,6 +800,7 @@ function renderSubjects(){
     });
     card.querySelector('[data-del-subject]').addEventListener('click', ()=>{
       CONFIG.subjects = CONFIG.subjects.filter(s=>s!==subj);
+      saveLocal('forher_subjects', CONFIG.subjects);
       renderSubjects();
     });
 
@@ -803,6 +818,7 @@ function renderSubjects(){
     const input = addCard.querySelector('[data-new-subject]');
     if(input.value.trim()){
       CONFIG.subjects.push({ name: input.value.trim(), topics: [] });
+      saveLocal('forher_subjects', CONFIG.subjects);
       renderSubjects();
     }
   });
@@ -811,21 +827,33 @@ function renderSubjects(){
   });
   grid.appendChild(addCard);
 }
+CONFIG.subjects = loadLocal('forher_subjects', CONFIG.subjects);
 renderSubjects();
 
 // ---------- reminders ----------
 document.getElementById('quoteOfDay').textContent = `"${CONFIG.quoteOfDay}"`;
-let reminderState = CONFIG.reminders.map(r => ({label:r, done:false}));
+let reminderState = loadLocal('forher_reminders', CONFIG.reminders.map(r => ({label:r, done:false})));
 function renderReminders(){
   const list = document.getElementById('reminderList');
   list.innerHTML = '';
   reminderState.forEach((r, i)=>{
-    const row = document.createElement('label');
+    const row = document.createElement('div');
     row.className = 'reminder-item card' + (r.done?' done':'');
-    row.innerHTML = `<input type="checkbox" ${r.done?'checked':''}><span>${r.label}</span>`;
+    row.innerHTML = `
+      <label style="display:flex;align-items:center;gap:14px;flex:1;cursor:pointer;">
+        <input type="checkbox" ${r.done?'checked':''}><span>${r.label}</span>
+      </label>
+      <button class="topic-del" title="Remove reminder">✕</button>
+    `;
     row.querySelector('input').addEventListener('change', e=>{
       r.done = e.target.checked;
       renderReminders();
+      saveLocal('forher_reminders', reminderState);
+    });
+    row.querySelector('.topic-del').addEventListener('click', ()=>{
+      reminderState = reminderState.filter(x=>x!==r);
+      renderReminders();
+      saveLocal('forher_reminders', reminderState);
     });
     list.appendChild(row);
   });
@@ -837,6 +865,7 @@ document.getElementById('addReminderBtn').addEventListener('click', ()=>{
     reminderState.push({label: input.value.trim(), done:false});
     input.value = '';
     renderReminders();
+    saveLocal('forher_reminders', reminderState);
   }
 });
 document.getElementById('newReminder').addEventListener('keydown', e=>{
