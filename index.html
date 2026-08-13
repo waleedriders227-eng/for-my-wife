@@ -207,7 +207,7 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);text-align:center;margin-bottom:10px;}
 
 /* ---------- study ---------- */
 .countdown{
-  display:flex;gap:clamp(10px,3vw,26px);justify-content:center;margin-bottom:44px;flex-wrap:wrap;
+  display:flex;gap:clamp(10px,3vw,26px);justify-content:center;margin-bottom:44px;flex-wrap:nowrap;
 }
 .count-box{text-align:center;min-width:70px;}
 .count-num{font-family:var(--display);font-size:clamp(2rem,5vw,2.8rem);color:var(--rose-deep);}
@@ -405,6 +405,12 @@ footer span{color:var(--rose-deep);}
 
 @media(max-width:600px){
   section{padding:90px 18px 70px;}
+  .countdown{gap:8px;}
+  .count-box{min-width:0;flex:1;}
+  .count-num{font-size:1.7rem;}
+  .gallery-grid{grid-template-columns:1fr;max-width:320px;margin-left:auto;margin-right:auto;}
+  .polaroid:nth-child(odd),.polaroid:nth-child(even){transform:rotate(0deg);}
+  .polaroid:hover{transform:scale(1.03);}
 }
 </style>
 </head>
