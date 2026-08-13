@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500;1,600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+
+/* ============================================================
+   EDIT ME — everything you'll want to personalize is in the
+   CONFIG object near the top of the <script> at the bottom of
+   this file. Scroll down and search for "EDIT ME" to find it.
+   ============================================================ */
+
+:root{
+  --bg:#fdf1f4;
+  --bg2:#fbe3ea;
+  --card:#fffbfc;
+  --rose:#e8869c;
+  --rose-deep:#d1637d;
+  --rose-pale:#f6c9d3;
+  --mauve:#a97a8a;
+  --text:#4a2c38;
+  --text-dim:#8a6470;
+  --gold:#d9a86c;
+  --line:rgba(216,110,140,0.18);
+  --display:'Playfair Display', serif;
+  --script:'Cormorant Garamond', serif;
+  --body:'Outfit', sans-serif;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+html{scroll-behavior:smooth;}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--body);
+  font-weight:300;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+::selection{background:var(--rose-pale);color:var(--rose-deep);}
+
+/* ---------- soft background wash ---------- */
+#bgwash{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 40% at 15% 8%, var(--bg2) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 90% 85%, #f8d9e1 0%, transparent 55%),
+    var(--bg);
+}
+
+/* ---------- floating hearts & flowers ---------- */
+#floaties{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.floaty{
+  position:absolute;bottom:-10%;
+  opacity:0;
+  animation:floatUp var(--dur) linear infinite;
+  animation-delay:var(--delay);
+  filter:drop-shadow(0 2px 6px rgba(209,99,125,0.15));
+}
+@keyframes floatUp{
+  0%{transform:translateY(0) translateX(0) rotate(0deg);opacity:0;}
+  8%{opacity:var(--op);}
+  50%{transform:translateY(-55vh) translateX(var(--drift)) rotate(var(--rot));}
+  92%{opacity:var(--op);}
+  100%{transform:translateY(-115vh) translateX(calc(var(--drift) * -1)) rotate(calc(var(--rot) * -1));opacity:0;}
+}
+
+/* ---------- nav ---------- */
+nav{
+  position:sticky;top:0;z-index:50;
+  display:flex;justify-content:center;gap:clamp(10px,3vw,34px);
+  padding:18px 16px;
+  background:rgba(253,241,244,0.78);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+  flex-wrap:wrap;
+}
+nav a{
+  color:var(--text-dim);
+  text-decoration:none;
+  font-size:0.72rem;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  font-weight:500;
+  padding:6px 4px;
+  border-bottom:1px solid transparent;
+  transition:color .3s, border-color .3s;
+  white-space:nowrap;
+}
+nav a:hover, nav a.active{color:var(--rose-deep);border-color:var(--rose);}
+
+section{
+  position:relative;z-index:1;
+  min-height:100vh;
+  padding:110px 24px 90px;
+  display:flex;flex-direction:column;align-items:center;
+  max-width:920px;margin:0 auto;
+}
+
+.eyebrow{
+  font-family:var(--body);
+  font-size:0.72rem;
+  letter-spacing:0.28em;
+  text-transform:uppercase;
+  color:var(--rose-deep);
+  margin-bottom:18px;
+  opacity:0;
+  animation:rise .9s ease forwards;
+}
+h1,h2{font-family:var(--display);font-weight:600;color:var(--text);}
+h2{font-size:clamp(1.8rem,4vw,2.6rem);text-align:center;margin-bottom:10px;}
+.sub{color:var(--text-dim);text-align:center;max-width:520px;margin:0 auto 50px;font-size:1rem;line-height:1.6;font-weight:300;}
+
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .8s ease, transform .8s ease;}
+.reveal.in{opacity:1;transform:translateY(0);}
+
+@keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+/* ---------- hero ---------- */
+#home{justify-content:center;text-align:center;}
+.hero-greeting{
+  font-family:var(--script);
+  font-style:italic;
+  font-size:clamp(1.2rem,2.6vw,1.6rem);
+  color:var(--rose-deep);
+  opacity:0;animation:rise 1s ease .1s forwards;
+}
+.hero-name{
+  font-family:var(--display);
+  font-style:italic;
+  font-size:clamp(3rem,9vw,6rem);
+  line-height:1.05;
+  margin:8px 0 20px;
+  background:linear-gradient(120deg,var(--rose-deep),var(--rose) 45%,var(--gold));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  opacity:0;animation:rise 1s ease .25s forwards;
+}
+.hero-date{
+  color:var(--text-dim);font-size:0.9rem;letter-spacing:0.08em;
+  opacity:0;animation:rise 1s ease .4s forwards;
+}
+.hero-bow{
+  font-size:1.4rem;margin:30px auto;color:var(--rose);
+  opacity:0;animation:rise 1s ease .55s forwards;
+}
+.hero-note{
+  max-width:480px;color:var(--text-dim);font-size:1.02rem;line-height:1.8;
+  opacity:0;animation:rise 1s ease .7s forwards;
+}
+.scroll-hint{
+  margin-top:56px;font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--rose-deep);opacity:0;animation:rise 1s ease 1s forwards, bob 2.4s ease-in-out 2s infinite;
+}
+@keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(6px);}}
+
+/* ---------- generic card ---------- */
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:32px;
+  width:100%;
+  box-shadow:0 10px 34px rgba(209,99,125,0.09);
+}
+
+/* ---------- weather ---------- */
+.weather-wrap{display:flex;flex-direction:column;align-items:center;gap:22px;width:100%;max-width:440px;}
+.weather-card{
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.weather-icon{font-size:4.2rem;line-height:1;margin-bottom:6px;filter:drop-shadow(0 0 14px rgba(232,134,156,0.35));}
+.weather-temp{font-family:var(--display);font-size:3.4rem;color:var(--rose-deep);}
+.weather-desc{color:var(--text-dim);text-transform:capitalize;margin-bottom:18px;}
+.weather-meta{display:flex;justify-content:center;gap:28px;font-size:0.82rem;color:var(--text-dim);margin-bottom:20px;}
+.weather-meta b{color:var(--text);display:block;font-size:1rem;font-weight:500;}
+.weather-tip{
+  font-family:var(--script);font-style:italic;font-size:1.15rem;color:var(--rose-deep);
+  border-top:1px solid var(--line);padding-top:18px;
+}
+.weather-btn{
+  background:none;border:1px solid var(--rose);color:var(--rose-deep);
+  padding:9px 20px;border-radius:30px;font-family:var(--body);font-size:0.75rem;
+  letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all .3s;
+}
+.weather-btn:hover{background:var(--rose);color:#fff;}
+.weather-loading{color:var(--text-dim);font-size:0.9rem;}
+
+/* ---------- study ---------- */
+.countdown{
+  display:flex;gap:clamp(10px,3vw,26px);justify-content:center;margin-bottom:44px;flex-wrap:wrap;
+}
+.count-box{text-align:center;min-width:70px;}
+.count-num{font-family:var(--display);font-size:clamp(2rem,5vw,2.8rem);color:var(--rose-deep);}
+.count-label{font-size:0.65rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-dim);}
+.exam-name{text-align:center;color:var(--rose-deep);font-family:var(--script);font-style:italic;font-size:1.2rem;margin-bottom:8px;}
+
+.subject-grid{display:grid;gap:16px;width:100%;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));}
+.subject-card{padding:22px;}
+.subject-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;}
+.subject-head span:first-child{font-family:var(--display);font-size:1.15rem;color:var(--text);}
+.subject-pct{color:var(--rose-deep);font-size:0.85rem;}
+.progress-track{height:5px;background:rgba(209,99,125,0.12);border-radius:10px;overflow:hidden;margin-bottom:16px;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--rose),var(--gold));border-radius:10px;transition:width .5s ease;}
+.topic{display:flex;align-items:center;gap:10px;font-size:0.88rem;color:var(--text-dim);padding:5px 0;cursor:pointer;user-select:none;}
+.topic input{accent-color:var(--rose);width:15px;height:15px;cursor:pointer;flex-shrink:0;}
+.topic.done span{text-decoration:line-through;color:var(--text-dim);opacity:0.5;}
+
+/* ---------- reminders ---------- */
+.reminder-list{width:100%;display:flex;flex-direction:column;gap:12px;}
+.reminder-item{
+  display:flex;align-items:center;gap:14px;padding:16px 20px;
+}
+.reminder-item input{width:17px;height:17px;accent-color:var(--rose);cursor:pointer;flex-shrink:0;}
+.reminder-item.done span{opacity:0.4;text-decoration:line-through;}
+.reminder-add{display:flex;gap:10px;margin-top:22px;width:100%;}
+.reminder-add input[type=text]{
+  flex:1;background:var(--card);border:1px solid var(--line);color:var(--text);
+  padding:12px 16px;border-radius:10px;font-family:var(--body);font-size:0.9rem;
+}
+.reminder-add input[type=text]:focus{outline:none;border-color:var(--rose);}
+.reminder-add button{
+  background:var(--rose);border:none;color:#fff;padding:0 22px;border-radius:10px;
+  font-weight:500;cursor:pointer;font-family:var(--body);
+}
+.quote-of-day{
+  font-family:var(--script);font-style:italic;font-size:1.3rem;color:var(--rose-deep);
+  text-align:center;margin-bottom:36px;max-width:520px;line-height:1.6;
+}
+
+/* ---------- music ---------- */
+.music-grid{display:grid;gap:16px;width:100%;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));}
+.song-card{display:flex;align-items:center;gap:16px;padding:18px 20px;text-decoration:none;transition:transform .3s, border-color .3s;}
+.song-card:hover{transform:translateY(-3px);border-color:var(--rose);}
+.song-emoji{font-size:1.8rem;}
+.song-title{color:var(--text);font-size:0.95rem;font-weight:400;display:block;}
+.song-sub{color:var(--text-dim);font-size:0.75rem;}
+.playlist-embed{width:100%;border-radius:14px;overflow:hidden;margin-top:28px;border:1px solid var(--line);}
+
+/* ---------- letter ---------- */
+#letter-section{align-items:center;justify-content:center;}
+.envelope-wrap{cursor:pointer;text-align:center;}
+.envelope{
+  width:220px;height:150px;margin:0 auto;position:relative;
+  background:linear-gradient(135deg,#ffffff,var(--rose-pale));
+  border:1px solid var(--rose);border-radius:6px;
+  box-shadow:0 20px 60px rgba(232,134,156,0.25);
+  transition:transform .4s ease;
+}
+.envelope-wrap:hover .envelope{transform:translateY(-6px);}
+.envelope::before{
+  content:'';position:absolute;top:0;left:0;width:0;height:0;
+  border-left:110px solid transparent;border-right:110px solid transparent;
+  border-top:80px solid #ffffff;
+}
+.envelope::after{
+  content:'♡';position:absolute;top:58%;left:50%;transform:translate(-50%,-50%);
+  color:var(--rose-deep);font-size:1.4rem;
+}
+.envelope-hint{margin-top:22px;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--rose-deep);}
+
+.letter-paper{
+  display:none;
+  max-width:600px;width:100%;
+  background:linear-gradient(180deg,#fffdf9,#fdf3ef);
+  color:#5a3340;
+  border-radius:4px;
+  padding:clamp(32px,6vw,64px);
+  box-shadow:0 30px 80px rgba(209,99,125,0.28);
+  font-family:var(--script);
+  font-size:clamp(1.15rem,2.4vw,1.4rem);
+  line-height:1.85;
+  position:relative;
+  border:1px solid var(--rose-pale);
+}
+.letter-paper.show{display:block;animation:unfold .7s ease;}
+@keyframes unfold{from{opacity:0;transform:scale(0.92) rotateX(8deg);}to{opacity:1;transform:scale(1) rotateX(0);}}
+.letter-paper p{margin-bottom:18px;white-space:pre-wrap;}
+.letter-sign{
+  text-align:right;font-size:1.5rem;color:var(--rose-deep);margin-top:24px;font-style:italic;
+}
+.close-letter{
+  display:none;margin-top:26px;background:none;border:1px solid var(--rose);color:var(--rose-deep);
+  padding:9px 22px;border-radius:30px;cursor:pointer;font-family:var(--body);font-size:0.75rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+}
+.close-letter.show{display:inline-block;}
+
+footer{
+  text-align:center;padding:40px 20px 60px;color:var(--text-dim);font-size:0.75rem;
+  letter-spacing:0.08em;position:relative;z-index:1;
+}
+footer span{color:var(--rose-deep);}
+
+@media(max-width:600px){
+  section{padding:90px 18px 70px;}
+}
+</style>
+</head>
+<body>
+
+<div id="bgwash"></div>
+<div id="floaties"></div>
+
+<nav>
+  <a href="#home" class="nav-link">Home</a>
+  <a href="#weather" class="nav-link">Weather</a>
+  <a href="#study" class="nav-link">Study</a>
+  <a href="#reminders" class="nav-link">Reminders</a>
+  <a href="#music" class="nav-link">Music</a>
+  <a href="#letter-section" class="nav-link">Letter</a>
+</nav>
+
+<!-- ================= HOME ================= -->
+<section id="home">
+  <div class="hero-greeting" id="greetingLine">Good evening,</div>
+  <h1 class="hero-name" id="heroName">Her Name</h1>
+  <div class="hero-date" id="heroDate"></div>
+  <div class="hero-bow">🎀</div>
+  <p class="hero-note" id="heroNote">A small corner of the internet, made just for you.</p>
+  <div class="scroll-hint">Scroll ↓</div>
+</section>
+
+<!-- ================= WEATHER ================= -->
+<section id="weather">
+  <div class="eyebrow">Right now, where you are</div>
+  <h2>Today's Sky</h2>
+  <p class="sub">A little heads-up before you leave the house.</p>
+  <div class="weather-wrap reveal">
+    <div class="card weather-card" id="weatherCard">
+      <div class="weather-loading">Loading weather…</div>
+    </div>
+    <button class="weather-btn" id="refreshWeather">Refresh</button>
+  </div>
+</section>
+
+<!-- ================= STUDY ================= -->
+<section id="study">
+  <div class="eyebrow">Exam prep</div>
+  <h2 id="examTitle">Exam Countdown</h2>
+  <div class="exam-name" id="examName"></div>
+  <div class="countdown reveal" id="countdown"></div>
+  <div class="subject-grid reveal" id="subjectGrid"></div>
+</section>
+
+<!-- ================= REMINDERS ================= -->
+<section id="reminders">
+  <div class="eyebrow">For today</div>
+  <h2>Reminders</h2>
+  <p class="quote-of-day reveal" id="quoteOfDay"></p>
+  <div class="reminder-list reveal" id="reminderList"></div>
+  <div class="reminder-add reveal">
+    <input type="text" id="newReminder" placeholder="Add a reminder for her…">
+    <button id="addReminderBtn">Add</button>
+  </div>
+  <p style="font-size:0.7rem;color:var(--text-dim);margin-top:14px;opacity:0.7;">Checks reset when the page is reloaded.</p>
+</section>
+
+<!-- ================= MUSIC ================= -->
+<section id="music">
+  <div class="eyebrow">Something to play</div>
+  <h2>Her Playlist</h2>
+  <p class="sub" id="musicSub">Songs picked with her in mind.</p>
+  <div class="music-grid reveal" id="musicGrid"></div>
+  <div id="playlistEmbedWrap"></div>
+</section>
+
+<!-- ================= LETTER ================= -->
+<section id="letter-section">
+  <div class="eyebrow">One more thing</div>
+  <h2 style="margin-bottom:40px;">A Letter For You</h2>
+
+  <div class="envelope-wrap reveal" id="envelopeWrap">
+    <div class="envelope"></div>
+    <div class="envelope-hint">Tap to open</div>
+  </div>
+
+  <div class="letter-paper" id="letterPaper"></div>
+  <button class="close-letter" id="closeLetterBtn">Close letter</button>
+</section>
+
+<footer>made with <span>♡</span> for you</footer>
+
+<script>
+/* ============================================================
+   EDIT ME — CONFIGURATION
+   Change anything below. You don't need to touch any code
+   outside this object. Save the file after editing, then just
+   reopen for-her.html in your browser to see changes.
+   ============================================================ */
+const CONFIG = {
+  girlfriendName: "Ayesha",          // her name — shown on the home page
+  yourName: "Ali",                   // used for the letter signature
+
+  // --- Weather ---
+  // The site will first try to use HER live location (with permission).
+  // If she says no, it falls back to the coordinates below.
+  fallbackLat: 32.1877,
+  fallbackLon: 74.1945,
+  fallbackCityLabel: "Gujranwala",
+
+  // --- Exam / Study ---
+  examName: "Final Term Exams",
+  examDate: "2026-09-15",            // YYYY-MM-DD, 24h clock, her local time
+  subjects: [
+    {
+      name: "Mathematics",
+      topics: ["Calculus review", "Probability", "Past paper 2024", "Weak-area revision"]
+    },
+    {
+      name: "Physics",
+      topics: ["Mechanics", "Waves & Optics", "Numericals practice", "Formula sheet"]
+    },
+    {
+      name: "English",
+      topics: ["Essay outline", "Grammar review", "Vocabulary", "Mock test"]
+    }
+  ],
+
+  // --- Reminders ---
+  quoteOfDay: "You're doing better than you think you are.",
+  reminders: [
+    "Drink water 💧",
+    "Take a 10-minute break every hour",
+    "Eat something before you start studying",
+    "Sleep by 11pm tonight",
+    "You've got this 🤍"
+  ],
+
+  // --- Music ---
+  // Option A: simple list of songs (title + a link, e.g. YouTube/Spotify track link)
+  songs: [
+    { title: "Your song #1", note: "the one that reminds me of you", url: "https://open.spotify.com" },
+    { title: "Your song #2", note: "for late-night study sessions", url: "https://open.spotify.com" },
+    { title: "Your song #3", note: "our song", url: "https://open.spotify.com" }
+  ],
+  // Option B (optional): paste a Spotify PLAYLIST embed URL here to show a full embedded
+  // player instead of / alongside the list above. Leave empty ("") to skip it.
+  // Get it from Spotify: Share -> Embed playlist -> copy the src="..." link.
+  spotifyEmbedUrl: "",
+
+  // --- Letter ---
+  // Use \n\n for a new paragraph.
+  letter: "My dearest,\n\nI wanted a way to say the things I don't always say out loud — so I built this instead.\n\nEvery small thing here, the weather, the reminders, your exam countdown, is just an excuse to think about you a little more than usual. Which, honestly, isn't hard.\n\nI'm proud of you, I believe in you, and I'm cheering you on every single day — exams and everything else included.\n\nWith all my love,"
+};
+/* ============================================================
+   End of editable section. Code below just makes it all work.
+   ============================================================ */
+
+// ---------- floating hearts & flowers ----------
+(function initFloaties(){
+  const wrap = document.getElementById('floaties');
+  const symbols = ['♡','🌸','🌷','💗','✿','🎀'];
+  const n = 26;
+  for(let i=0;i<n;i++){
+    const f = document.createElement('div');
+    f.className = 'floaty';
+    f.textContent = symbols[Math.floor(Math.random()*symbols.length)];
+    const size = 14 + Math.random()*20;
+    f.style.fontSize = size + 'px';
+    f.style.left = Math.random()*100 + '%';
+    f.style.color = Math.random() > 0.5 ? 'var(--rose)' : 'var(--rose-pale)';
+    f.style.setProperty('--dur', (14 + Math.random()*16) + 's');
+    f.style.setProperty('--delay', (Math.random()*20) + 's');
+    f.style.setProperty('--drift', (Math.random()*80 - 40) + 'px');
+    f.style.setProperty('--rot', (Math.random()*50 - 25) + 'deg');
+    f.style.setProperty('--op', (0.35 + Math.random()*0.4).toFixed(2));
+    wrap.appendChild(f);
+  }
+})();
+
+// ---------- scroll reveal ----------
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in'); });
+},{threshold:0.15});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+// ---------- nav active state ----------
+const navLinks = document.querySelectorAll('.nav-link');
+const sections = document.querySelectorAll('section');
+const navObserver = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      navLinks.forEach(l=>l.classList.remove('active'));
+      const link = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+      if(link) link.classList.add('active');
+    }
+  });
+},{threshold:0.5});
+sections.forEach(s=>navObserver.observe(s));
+
+// ---------- hero ----------
+document.getElementById('heroName').textContent = CONFIG.girlfriendName;
+const hour = new Date().getHours();
+const greeting = hour < 12 ? "Good morning," : hour < 18 ? "Good afternoon," : "Good evening,";
+document.getElementById('greetingLine').textContent = greeting;
+document.getElementById('heroDate').textContent = new Date().toLocaleDateString(undefined,{weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+// ---------- weather ----------
+const weatherCodeMap = {
+  0:['☀️','clear sky'], 1:['🌤️','mostly clear'], 2:['⛅','partly cloudy'], 3:['☁️','overcast'],
+  45:['🌫️','fog'], 48:['🌫️','depositing fog'],
+  51:['🌦️','light drizzle'], 53:['🌦️','drizzle'], 55:['🌦️','dense drizzle'],
+  61:['🌧️','light rain'], 63:['🌧️','rain'], 65:['🌧️','heavy rain'],
+  71:['❄️','light snow'], 73:['❄️','snow'], 75:['❄️','heavy snow'],
+  80:['🌦️','rain showers'], 81:['🌧️','rain showers'], 82:['🌧️','violent showers'],
+  95:['⛈️','thunderstorm'], 96:['⛈️','thunderstorm w/ hail'], 99:['⛈️','severe thunderstorm']
+};
+function weatherTip(tempC){
+  if(tempC >= 34) return "Scorching — light fabrics, water bottle, avoid the midday sun.";
+  if(tempC >= 27) return "Warm day — something light and breathable should do it.";
+  if(tempC >= 18) return "Pleasant — a light jacket for the evening wouldn't hurt.";
+  if(tempC >= 10) return "Cool out — grab a sweater before you head out.";
+  return "Cold — bundle up properly today.";
+}
+async function loadWeather(lat, lon, label){
+  const card = document.getElementById('weatherCard');
+  card.innerHTML = '<div class="weather-loading">Loading weather…</div>';
+  try{
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto`);
+    const data = await res.json();
+    const c = data.current;
+    const [icon, desc] = weatherCodeMap[c.weather_code] || ['🌡️','—'];
+    card.innerHTML = `
+      <div class="weather-icon">${icon}</div>
+      <div class="weather-temp">${Math.round(c.temperature_2m)}°C</div>
+      <div class="weather-desc">${desc}${label ? ' · '+label : ''}</div>
+      <div class="weather-meta">
+        <div><b>${c.relative_humidity_2m}%</b>Humidity</div>
+        <div><b>${Math.round(c.wind_speed_10m)} km/h</b>Wind</div>
+      </div>
+      <div class="weather-tip">"${weatherTip(c.temperature_2m)}"</div>
+    `;
+  }catch(err){
+    card.innerHTML = '<div class="weather-loading">Couldn\'t load weather right now — check your connection and hit refresh.</div>';
+  }
+}
+function initWeather(){
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      pos => loadWeather(pos.coords.latitude, pos.coords.longitude, "your location"),
+      ()  => loadWeather(CONFIG.fallbackLat, CONFIG.fallbackLon, CONFIG.fallbackCityLabel),
+      { timeout: 6000 }
+    );
+  } else {
+    loadWeather(CONFIG.fallbackLat, CONFIG.fallbackLon, CONFIG.fallbackCityLabel);
+  }
+}
+initWeather();
+document.getElementById('refreshWeather').addEventListener('click', initWeather);
+
+// ---------- study / countdown ----------
+document.getElementById('examName').textContent = CONFIG.examName;
+function renderCountdown(){
+  const target = new Date(CONFIG.examDate).getTime();
+  const now = Date.now();
+  const diff = Math.max(0, target - now);
+  const d = Math.floor(diff/(1000*60*60*24));
+  const h = Math.floor((diff/(1000*60*60))%24);
+  const m = Math.floor((diff/(1000*60))%60);
+  const s = Math.floor((diff/1000)%60);
+  const box = document.getElementById('countdown');
+  const units = [[d,'Days'],[h,'Hours'],[m,'Min'],[s,'Sec']];
+  box.innerHTML = units.map(([v,l])=>`<div class="count-box card"><div class="count-num">${v}</div><div class="count-label">${l}</div></div>`).join('');
+}
+renderCountdown();
+setInterval(renderCountdown, 1000);
+
+function renderSubjects(){
+  const grid = document.getElementById('subjectGrid');
+  grid.innerHTML = '';
+  CONFIG.subjects.forEach((subj, si)=>{
+    const card = document.createElement('div');
+    card.className = 'card subject-card';
+    const pct = () => Math.round((subj.topics.filter(t=>t.__done).length / subj.topics.length) * 100);
+    card.innerHTML = `
+      <div class="subject-head"><span>${subj.name}</span><span class="subject-pct" data-pct>${pct()}%</span></div>
+      <div class="progress-track"><div class="progress-fill" data-fill style="width:${pct()}%"></div></div>
+      <div data-topics></div>
+    `;
+    const topicsWrap = card.querySelector('[data-topics]');
+    subj.topics = subj.topics.map(t => typeof t === 'string' ? {label:t, __done:false} : t);
+    subj.topics.forEach((topic, ti)=>{
+      const row = document.createElement('label');
+      row.className = 'topic';
+      row.innerHTML = `<input type="checkbox" ${topic.__done?'checked':''}><span>${topic.label}</span>`;
+      row.querySelector('input').addEventListener('change', (e)=>{
+        topic.__done = e.target.checked;
+        row.classList.toggle('done', topic.__done);
+        const p = pct();
+        card.querySelector('[data-pct]').textContent = p+'%';
+        card.querySelector('[data-fill]').style.width = p+'%';
+      });
+      if(topic.__done) row.classList.add('done');
+      topicsWrap.appendChild(row);
+    });
+    grid.appendChild(card);
+  });
+}
+renderSubjects();
+
+// ---------- reminders ----------
+document.getElementById('quoteOfDay').textContent = `"${CONFIG.quoteOfDay}"`;
+let reminderState = CONFIG.reminders.map(r => ({label:r, done:false}));
+function renderReminders(){
+  const list = document.getElementById('reminderList');
+  list.innerHTML = '';
+  reminderState.forEach((r, i)=>{
+    const row = document.createElement('label');
+    row.className = 'reminder-item card' + (r.done?' done':'');
+    row.innerHTML = `<input type="checkbox" ${r.done?'checked':''}><span>${r.label}</span>`;
+    row.querySelector('input').addEventListener('change', e=>{
+      r.done = e.target.checked;
+      renderReminders();
+    });
+    list.appendChild(row);
+  });
+}
+renderReminders();
+document.getElementById('addReminderBtn').addEventListener('click', ()=>{
+  const input = document.getElementById('newReminder');
+  if(input.value.trim()){
+    reminderState.push({label: input.value.trim(), done:false});
+    input.value = '';
+    renderReminders();
+  }
+});
+document.getElementById('newReminder').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') document.getElementById('addReminderBtn').click();
+});
+
+// ---------- music ----------
+function renderMusic(){
+  const grid = document.getElementById('musicGrid');
+  grid.innerHTML = CONFIG.songs.map(s => `
+    <a class="song-card card" href="${s.url}" target="_blank" rel="noopener">
+      <div class="song-emoji">🎵</div>
+      <div>
+        <span class="song-title">${s.title}</span>
+        <span class="song-sub">${s.note || ''}</span>
+      </div>
+    </a>
+  `).join('');
+
+  if(CONFIG.spotifyEmbedUrl){
+    document.getElementById('playlistEmbedWrap').innerHTML = `
+      <iframe class="playlist-embed" src="${CONFIG.spotifyEmbedUrl}" width="100%" height="352"
+        frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
+  }
+}
+renderMusic();
+
+// ---------- letter ----------
+const letterPaper = document.getElementById('letterPaper');
+const paragraphs = CONFIG.letter.split('\n\n').map(p => `<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
+letterPaper.innerHTML = paragraphs + `<div class="letter-sign">— ${CONFIG.yourName}</div>`;
+
+const envelopeWrap = document.getElementById('envelopeWrap');
+const closeLetterBtn = document.getElementById('closeLetterBtn');
+envelopeWrap.addEventListener('click', ()=>{
+  letterPaper.classList.add('show');
+  closeLetterBtn.classList.add('show');
+  envelopeWrap.style.display = 'none';
+});
+closeLetterBtn.addEventListener('click', ()=>{
+  letterPaper.classList.remove('show');
+  closeLetterBtn.classList.remove('show');
+  envelopeWrap.style.display = 'block';
+});
+</script>
+</body>
+</html>
