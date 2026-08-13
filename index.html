@@ -224,6 +224,42 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);text-align:center;margin-bottom:10px;}
 .topic{display:flex;align-items:center;gap:10px;font-size:0.88rem;color:var(--text-dim);padding:5px 0;cursor:pointer;user-select:none;}
 .topic input{accent-color:var(--rose);width:15px;height:15px;cursor:pointer;flex-shrink:0;}
 .topic.done span{text-decoration:line-through;color:var(--text-dim);opacity:0.5;}
+.topic-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.topic-del{
+  background:none;border:none;color:var(--rose-pale);font-size:0.95rem;cursor:pointer;
+  line-height:1;padding:2px 4px;flex-shrink:0;transition:color .2s;
+}
+.topic-del:hover{color:var(--rose-deep);}
+.topic-add{display:flex;gap:6px;margin-top:12px;}
+.topic-add input{
+  flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);color:var(--text);
+  padding:8px 10px;border-radius:8px;font-family:var(--body);font-size:0.8rem;
+}
+.topic-add input:focus{outline:none;border-color:var(--rose);}
+.topic-add button{
+  background:var(--rose);border:none;color:#fff;padding:0 14px;border-radius:8px;
+  font-weight:500;cursor:pointer;font-family:var(--body);font-size:0.85rem;flex-shrink:0;
+}
+.subject-del{
+  background:none;border:none;color:var(--rose-pale);font-size:1.1rem;cursor:pointer;
+  line-height:1;padding:0 2px;transition:color .2s;
+}
+.subject-del:hover{color:var(--rose-deep);}
+.add-subject-card{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  padding:28px 22px;border:1.5px dashed var(--rose-pale);background:transparent;box-shadow:none;
+}
+.add-subject-card input{
+  width:100%;background:var(--card);border:1px solid var(--line);color:var(--text);
+  padding:10px 14px;border-radius:10px;font-family:var(--body);font-size:0.85rem;text-align:center;
+}
+.add-subject-card input:focus{outline:none;border-color:var(--rose);}
+.add-subject-card button{
+  background:none;border:1px solid var(--rose);color:var(--rose-deep);padding:8px 20px;
+  border-radius:30px;font-family:var(--body);font-size:0.75rem;letter-spacing:0.08em;
+  text-transform:uppercase;cursor:pointer;transition:all .3s;
+}
+.add-subject-card button:hover{background:var(--rose);color:#fff;}
 
 /* ---------- reminders ---------- */
 .reminder-list{width:100%;display:flex;flex-direction:column;gap:12px;}
@@ -433,6 +469,7 @@ footer span{color:var(--rose-deep);}
   <div class="exam-name" id="examName"></div>
   <div class="countdown reveal" id="countdown"></div>
   <div class="subject-grid reveal" id="subjectGrid"></div>
+  <p style="font-size:0.7rem;color:var(--text-dim);margin-top:22px;opacity:0.7;">Add or remove subjects and topics anytime — changes reset when the page is reloaded.</p>
 </section>
 
 <!-- ================= REMINDERS ================= -->
@@ -494,9 +531,9 @@ const CONFIG = {
   // --- Weather ---
   // The site will first try to use HER live location (with permission).
   // If she says no, it falls back to the coordinates below.
-  fallbackLat: 32.1877,
-  fallbackLon: 74.1945,
-  fallbackCityLabel: "Gujranwala",
+  fallbackLat: 16.4023,
+  fallbackLon: 120.5960,
+  fallbackCityLabel: "Baguio, Philippines",
 
   // --- Exam / Study ---
   examName: "Final Term Exams",
@@ -682,32 +719,97 @@ function renderSubjects(){
   const grid = document.getElementById('subjectGrid');
   grid.innerHTML = '';
   CONFIG.subjects.forEach((subj, si)=>{
+    subj.topics = subj.topics.map(t => typeof t === 'string' ? {label:t, __done:false} : t);
     const card = document.createElement('div');
     card.className = 'card subject-card';
-    const pct = () => Math.round((subj.topics.filter(t=>t.__done).length / subj.topics.length) * 100);
+    const pct = () => subj.topics.length ? Math.round((subj.topics.filter(t=>t.__done).length / subj.topics.length) * 100) : 0;
     card.innerHTML = `
-      <div class="subject-head"><span>${subj.name}</span><span class="subject-pct" data-pct>${pct()}%</span></div>
+      <div class="subject-head">
+        <span>${subj.name}</span>
+        <span style="display:flex;align-items:center;gap:8px;">
+          <span class="subject-pct" data-pct>${pct()}%</span>
+          <button class="subject-del" data-del-subject title="Remove subject">✕</button>
+        </span>
+      </div>
       <div class="progress-track"><div class="progress-fill" data-fill style="width:${pct()}%"></div></div>
       <div data-topics></div>
+      <div class="topic-add">
+        <input type="text" placeholder="Add a topic…" data-topic-input>
+        <button data-add-topic>Add</button>
+      </div>
     `;
     const topicsWrap = card.querySelector('[data-topics]');
-    subj.topics = subj.topics.map(t => typeof t === 'string' ? {label:t, __done:false} : t);
-    subj.topics.forEach((topic, ti)=>{
-      const row = document.createElement('label');
-      row.className = 'topic';
-      row.innerHTML = `<input type="checkbox" ${topic.__done?'checked':''}><span>${topic.label}</span>`;
-      row.querySelector('input').addEventListener('change', (e)=>{
-        topic.__done = e.target.checked;
-        row.classList.toggle('done', topic.__done);
+
+    function renderTopics(){
+      topicsWrap.innerHTML = '';
+      subj.topics.forEach((topic)=>{
+        const row = document.createElement('div');
+        row.className = 'topic-row';
+        row.innerHTML = `
+          <label class="topic${topic.__done?' done':''}" style="flex:1;">
+            <input type="checkbox" ${topic.__done?'checked':''}><span>${topic.label}</span>
+          </label>
+          <button class="topic-del" title="Remove topic">✕</button>
+        `;
+        row.querySelector('input').addEventListener('change', (e)=>{
+          topic.__done = e.target.checked;
+          const p = pct();
+          card.querySelector('[data-pct]').textContent = p+'%';
+          card.querySelector('[data-fill]').style.width = p+'%';
+          renderTopics();
+        });
+        row.querySelector('.topic-del').addEventListener('click', ()=>{
+          subj.topics = subj.topics.filter(t=>t!==topic);
+          const p = pct();
+          card.querySelector('[data-pct]').textContent = p+'%';
+          card.querySelector('[data-fill]').style.width = p+'%';
+          renderTopics();
+        });
+        topicsWrap.appendChild(row);
+      });
+    }
+    renderTopics();
+
+    card.querySelector('[data-add-topic]').addEventListener('click', ()=>{
+      const input = card.querySelector('[data-topic-input]');
+      if(input.value.trim()){
+        subj.topics.push({label: input.value.trim(), __done:false});
+        input.value = '';
         const p = pct();
         card.querySelector('[data-pct]').textContent = p+'%';
         card.querySelector('[data-fill]').style.width = p+'%';
-      });
-      if(topic.__done) row.classList.add('done');
-      topicsWrap.appendChild(row);
+        renderTopics();
+      }
     });
+    card.querySelector('[data-topic-input]').addEventListener('keydown', e=>{
+      if(e.key === 'Enter') card.querySelector('[data-add-topic]').click();
+    });
+    card.querySelector('[data-del-subject]').addEventListener('click', ()=>{
+      CONFIG.subjects = CONFIG.subjects.filter(s=>s!==subj);
+      renderSubjects();
+    });
+
     grid.appendChild(card);
   });
+
+  // "add subject" card
+  const addCard = document.createElement('div');
+  addCard.className = 'card add-subject-card';
+  addCard.innerHTML = `
+    <input type="text" placeholder="New subject name…" data-new-subject>
+    <button data-add-subject>+ Add subject</button>
+  `;
+  addCard.querySelector('[data-add-subject]').addEventListener('click', ()=>{
+    const input = addCard.querySelector('[data-new-subject]');
+    if(input.value.trim()){
+      CONFIG.subjects.push({ name: input.value.trim(), topics: [] });
+      renderSubjects();
+    }
+  });
+  addCard.querySelector('[data-new-subject]').addEventListener('keydown', e=>{
+    if(e.key === 'Enter') addCard.querySelector('[data-add-subject]').click();
+  });
+  grid.appendChild(addCard);
 }
 renderSubjects();
 
