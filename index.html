@@ -188,7 +188,28 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);text-align:center;margin-bottom:10px;}
   position:relative;
   overflow:hidden;
 }
-.weather-icon{font-size:4.2rem;line-height:1;margin-bottom:6px;filter:drop-shadow(0 0 14px rgba(232,134,156,0.35));}
+.weather-icon{font-size:4.2rem;line-height:1;margin-bottom:6px;filter:drop-shadow(0 0 14px rgba(232,134,156,0.35));display:inline-block;}
+.weather-icon-wrap{position:relative;display:flex;justify-content:center;}
+.wx-sunny{animation:wxSunny 3.2s ease-in-out infinite;}
+@keyframes wxSunny{0%,100%{transform:scale(1) rotate(0deg);}50%{transform:scale(1.1) rotate(12deg);}}
+.wx-cloudy{animation:wxCloudy 4.5s ease-in-out infinite;}
+@keyframes wxCloudy{0%,100%{transform:translateX(0);}50%{transform:translateX(10px);}}
+.wx-fog{animation:wxFog 3.5s ease-in-out infinite;}
+@keyframes wxFog{0%,100%{opacity:0.55;}50%{opacity:1;}}
+.wx-rain{animation:wxRain 1.1s ease-in-out infinite;}
+@keyframes wxRain{0%,100%{transform:translateY(0);}50%{transform:translateY(5px);}}
+.wx-snow{animation:wxSnow 3s ease-in-out infinite;}
+@keyframes wxSnow{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-6px) rotate(-8deg);}}
+.wx-storm{animation:wxStorm 1.8s ease-in-out infinite;}
+@keyframes wxStorm{0%,42%,100%{filter:drop-shadow(0 0 14px rgba(232,134,156,0.35)) brightness(1);}46%{filter:drop-shadow(0 0 24px rgba(227,181,103,0.8)) brightness(1.7);}50%{filter:drop-shadow(0 0 14px rgba(232,134,156,0.35)) brightness(1);}}
+.wx-rain-drops{position:absolute;top:60%;left:50%;transform:translateX(-50%);width:60px;height:26px;pointer-events:none;}
+.wx-rain .wx-rain-drops::before, .wx-rain .wx-rain-drops::after, .wx-storm .wx-rain-drops::before, .wx-storm .wx-rain-drops::after{
+  content:'';position:absolute;top:0;width:2px;height:10px;border-radius:2px;
+  background:linear-gradient(var(--rose),transparent);animation:wxDrop 0.9s linear infinite;
+}
+.wx-rain-drops::before{left:18px;animation-delay:0s;}
+.wx-rain-drops::after{left:38px;animation-delay:0.4s;}
+@keyframes wxDrop{0%{transform:translateY(-4px);opacity:0;}30%{opacity:1;}100%{transform:translateY(22px);opacity:0;}}
 .weather-temp{font-family:var(--display);font-size:3.4rem;color:var(--rose-deep);}
 .weather-feels{color:var(--text-dim);font-size:0.82rem;margin-top:-4px;}
 .weather-desc{color:var(--text-dim);text-transform:capitalize;margin:8px 0 22px;}
@@ -240,7 +261,27 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);text-align:center;margin-bottom:10px;}
 .count-box{text-align:center;min-width:70px;}
 .count-num{font-family:var(--display);font-size:clamp(2rem,5vw,2.8rem);color:var(--rose-deep);}
 .count-label{font-size:0.65rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-dim);}
-.exam-name{text-align:center;color:var(--rose-deep);font-family:var(--script);font-style:italic;font-size:1.2rem;margin-bottom:8px;}
+.exam-name{text-align:center;color:var(--rose-deep);font-family:var(--script);font-style:italic;font-size:1.2rem;}
+.exam-name-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;}
+.exam-edit-btn{
+  background:none;border:1px solid var(--rose-pale);color:var(--rose-deep);
+  width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:0.8rem;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;
+}
+.exam-edit-btn:hover{background:var(--rose);color:#fff;border-color:var(--rose);}
+.exam-edit-form{
+  display:none;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:30px;
+}
+.exam-edit-form.show{display:flex;}
+.exam-edit-form input{
+  background:var(--card);border:1px solid var(--line);color:var(--text);
+  padding:9px 14px;border-radius:20px;font-family:var(--body);font-size:0.82rem;
+}
+.exam-edit-form input:focus{outline:none;border-color:var(--rose);}
+.exam-edit-form button{
+  background:var(--rose);border:none;color:#fff;padding:0 18px;border-radius:20px;
+  font-weight:500;cursor:pointer;font-family:var(--body);font-size:0.8rem;
+}
 
 .subject-grid{display:grid;gap:16px;width:100%;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));}
 .subject-card{padding:22px;}
@@ -440,6 +481,19 @@ footer span{color:var(--rose-deep);}
   .gallery-grid{grid-template-columns:repeat(2,1fr);gap:20px 14px;}
   .polaroid{padding:8px 8px 30px;}
   .polaroid-caption{font-size:0.8rem;bottom:8px;}
+  .weather-wrap{max-width:280px;gap:14px;}
+  .weather-card{padding:20px 16px;}
+  .weather-icon{font-size:2.6rem;}
+  .weather-temp{font-size:2.2rem;}
+  .weather-feels{font-size:0.75rem;}
+  .weather-desc{font-size:0.8rem;margin-bottom:10px;}
+  .weather-stats{gap:8px;grid-template-columns:repeat(auto-fit,minmax(85px,1fr));}
+  .wstat{padding:9px 10px;}
+  .wstat-value{font-size:0.9rem;}
+  .wstat-label{font-size:0.55rem;}
+  .whour{padding:8px 9px;min-width:50px;}
+  .weather-hourly{gap:8px;}
+  .weather-tip{font-size:0.9rem;padding-top:12px;}
 }
 
 @media(max-width:380px){
@@ -567,7 +621,15 @@ footer span{color:var(--rose-deep);}
 <section id="study">
   <div class="eyebrow">Exam prep</div>
   <h2 id="examTitle">Exam Countdown</h2>
-  <div class="exam-name" id="examName"></div>
+  <div class="exam-name-row">
+    <div class="exam-name" id="examName"></div>
+    <button class="exam-edit-btn" id="examEditBtn" title="Edit exam">✎</button>
+  </div>
+  <form class="exam-edit-form" id="examEditForm">
+    <input type="text" id="examNameInput" placeholder="Exam name">
+    <input type="date" id="examDateInput">
+    <button type="submit">Save</button>
+  </form>
   <div class="countdown reveal" id="countdown"></div>
   <div class="subject-grid reveal" id="subjectGrid"></div>
   <p style="font-size:0.7rem;color:var(--text-dim);margin-top:22px;opacity:0.7;">Add or remove subjects and topics anytime — saved automatically on this device.</p>
@@ -798,6 +860,15 @@ const weatherCodeMap = {
   80:['🌦️','rain showers'], 81:['🌧️','rain showers'], 82:['🌧️','violent showers'],
   95:['⛈️','thunderstorm'], 96:['⛈️','thunderstorm w/ hail'], 99:['⛈️','severe thunderstorm']
 };
+function weatherCategory(code){
+  if(code === 0) return 'wx-sunny';
+  if(code === 1 || code === 2 || code === 3) return 'wx-cloudy';
+  if(code === 45 || code === 48) return 'wx-fog';
+  if([51,53,55,61,63,65,80,81,82].includes(code)) return 'wx-rain';
+  if([71,73,75,85,86].includes(code)) return 'wx-snow';
+  if([95,96,99].includes(code)) return 'wx-storm';
+  return '';
+}
 function weatherTip(tempC){
   if(tempC >= 34) return "Scorching — light fabrics, water bottle, avoid the midday sun.";
   if(tempC >= 27) return "Warm day — something light and breathable should do it.";
@@ -849,7 +920,7 @@ async function loadWeather(lat, lon, label){
 
     card.innerHTML = `
       <div class="weather-live"><span class="live-dot"></span>Live</div>
-      <div class="weather-icon">${icon}</div>
+      <div class="weather-icon-wrap ${weatherCategory(c.weather_code)}"><div class="weather-icon ${weatherCategory(c.weather_code)}">${icon}</div><div class="wx-rain-drops"></div></div>
       <div class="weather-temp">${Math.round(c.temperature_2m)}°C</div>
       <div class="weather-feels">Feels like ${Math.round(c.apparent_temperature)}°C · <span class="weather-hilo">H <b>${Math.round(d.temperature_2m_max[0])}°</b> L <b>${Math.round(d.temperature_2m_min[0])}°</b></span></div>
       <div class="weather-desc">${desc}${label ? ' · '+label : ''}</div>
@@ -918,9 +989,26 @@ function loadLocal(key, fallback){
 }
 
 // ---------- study / countdown ----------
-document.getElementById('examName').textContent = CONFIG.examName;
+let examState = loadLocal('forher_exam', { name: CONFIG.examName, date: CONFIG.examDate });
+document.getElementById('examName').textContent = examState.name;
+document.getElementById('examNameInput').value = examState.name;
+document.getElementById('examDateInput').value = examState.date;
+document.getElementById('examEditBtn').addEventListener('click', ()=>{
+  document.getElementById('examEditForm').classList.toggle('show');
+});
+document.getElementById('examEditForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const newName = document.getElementById('examNameInput').value.trim();
+  const newDate = document.getElementById('examDateInput').value;
+  if(newName) examState.name = newName;
+  if(newDate) examState.date = newDate;
+  saveLocal('forher_exam', examState);
+  document.getElementById('examName').textContent = examState.name;
+  document.getElementById('examEditForm').classList.remove('show');
+  renderCountdown();
+});
 function renderCountdown(){
-  const target = new Date(CONFIG.examDate).getTime();
+  const target = new Date(examState.date).getTime();
   const now = Date.now();
   const diff = Math.max(0, target - now);
   const d = Math.floor(diff/(1000*60*60*24));
