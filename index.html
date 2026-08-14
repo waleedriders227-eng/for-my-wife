@@ -434,11 +434,19 @@ footer span{color:var(--rose-deep);}
 @media(max-width:600px){
   section{padding:90px 18px 70px;}
   .countdown{gap:8px;}
-  .count-box{min-width:0;flex:1;}
-  .count-num{font-size:1.7rem;}
-  .gallery-grid{grid-template-columns:1fr;max-width:320px;margin-left:auto;margin-right:auto;}
-  .polaroid:nth-child(odd),.polaroid:nth-child(even){transform:rotate(0deg);}
-  .polaroid:hover{transform:scale(1.03);}
+  .count-box{min-width:0;flex:1;padding:14px 6px;}
+  .count-num{font-size:1.5rem;}
+  .count-label{font-size:0.55rem;letter-spacing:0.08em;}
+  .gallery-grid{grid-template-columns:repeat(2,1fr);gap:20px 14px;}
+  .polaroid{padding:8px 8px 30px;}
+  .polaroid-caption{font-size:0.8rem;bottom:8px;}
+}
+
+@media(max-width:380px){
+  .countdown{gap:5px;}
+  .count-box{padding:10px 3px;border-radius:14px;}
+  .count-num{font-size:1.2rem;}
+  .count-label{font-size:0.48rem;letter-spacing:0.04em;}
 }
 
 /* ---------- login gate ---------- */
@@ -447,9 +455,18 @@ footer span{color:var(--rose-deep);}
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   background:linear-gradient(180deg,var(--bg),var(--bg2));
   padding:24px;text-align:center;
+  overflow:hidden;
 }
+#loginFloaties{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;}
+.login-bow, .login-title, .login-sub, .login-form, .login-error{position:relative;z-index:1;}
 .login-bow{font-size:2.2rem;margin-bottom:18px;}
-.login-title{font-family:var(--display);font-style:italic;font-size:clamp(1.8rem,5vw,2.6rem);color:var(--rose-deep);margin-bottom:10px;}
+.login-title{
+  font-family:var(--script);font-style:italic;font-weight:600;
+  font-size:clamp(2.2rem,7vw,3.4rem);
+  margin-bottom:10px;
+  background:linear-gradient(120deg,var(--rose-deep),var(--rose) 45%,var(--gold));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
 .login-sub{color:var(--text-dim);font-size:0.95rem;max-width:340px;margin-bottom:34px;line-height:1.6;}
 .login-form{display:flex;flex-direction:column;gap:12px;width:100%;max-width:300px;margin-bottom:16px;}
 .login-form input{
@@ -482,9 +499,10 @@ footer span{color:var(--rose-deep);}
 <div id="floaties"></div>
 
 <div id="loginGate">
+  <div id="loginFloaties"></div>
   <div class="login-bow">🎀</div>
   <div class="login-title">Just for you</div>
-  <p class="login-sub">This little site was made only for you — sign in to open it.</p>
+  <p class="login-sub">Sign in to open it.</p>
   <form id="loginForm" class="login-form">
     <input type="email" id="loginEmail" placeholder="Email" autocomplete="username" required>
     <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" required>
@@ -720,11 +738,11 @@ document.getElementById('signOutBtn').addEventListener('click', ()=>{
 });
 
 // ---------- floating hearts & flowers ----------
-(function initFloaties(){
-  const wrap = document.getElementById('floaties');
-  const symbols = ['♡','🌸','🌷','💗','✿','🎀'];
-  const n = 26;
-  for(let i=0;i<n;i++){
+function spawnFloaties(containerId, count){
+  const wrap = document.getElementById(containerId);
+  if(!wrap) return;
+  const symbols = ['♡','🌸','🌷','💗','✿','🎀','🌺','💐'];
+  for(let i=0;i<count;i++){
     const f = document.createElement('div');
     f.className = 'floaty';
     f.textContent = symbols[Math.floor(Math.random()*symbols.length)];
@@ -739,7 +757,9 @@ document.getElementById('signOutBtn').addEventListener('click', ()=>{
     f.style.setProperty('--op', (0.35 + Math.random()*0.4).toFixed(2));
     wrap.appendChild(f);
   }
-})();
+}
+spawnFloaties('floaties', 26);
+spawnFloaties('loginFloaties', 24);
 
 // ---------- scroll reveal ----------
 const io = new IntersectionObserver((entries)=>{
