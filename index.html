@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500;1,600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 
 /* ============================================================
@@ -412,6 +413,27 @@ footer span{color:var(--rose-deep);}
   .polaroid:nth-child(odd),.polaroid:nth-child(even){transform:rotate(0deg);}
   .polaroid:hover{transform:scale(1.03);}
 }
+
+/* ---------- login gate ---------- */
+#loginGate{
+  position:fixed;inset:0;z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,var(--bg),var(--bg2));
+  padding:24px;text-align:center;
+}
+.login-bow{font-size:2.2rem;margin-bottom:18px;}
+.login-title{font-family:var(--display);font-style:italic;font-size:clamp(1.8rem,5vw,2.6rem);color:var(--rose-deep);margin-bottom:10px;}
+.login-sub{color:var(--text-dim);font-size:0.95rem;max-width:340px;margin-bottom:34px;line-height:1.6;}
+#googleSignInDiv{margin-bottom:16px;}
+.login-error{color:var(--rose-deep);font-size:0.85rem;max-width:320px;line-height:1.6;display:none;}
+.login-error.show{display:block;}
+.login-signout{
+  position:fixed;bottom:18px;right:18px;z-index:60;
+  background:rgba(255,253,251,0.85);border:1px solid var(--rose-pale);color:var(--text-dim);
+  padding:7px 16px;border-radius:30px;font-family:var(--body);font-size:0.68rem;
+  letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(10px);
+}
+.login-signout:hover{color:var(--rose-deep);border-color:var(--rose);}
 </style>
 </head>
 <body>
@@ -419,6 +441,17 @@ footer span{color:var(--rose-deep);}
 <div id="bgwash"></div>
 <div id="floaties"></div>
 
+<div id="loginGate">
+  <div class="login-bow">🎀</div>
+  <div class="login-title">Just for you</div>
+  <p class="login-sub">This little site was made only for you — sign in with your Google account to open it.</p>
+  <div id="googleSignInDiv"></div>
+  <p class="login-error" id="loginError">Hmm, that's not the account this was made for 🤍 try signing in with the right one.</p>
+</div>
+
+<button class="login-signout" id="signOutBtn" style="display:none;">Sign out</button>
+
+<div id="siteContent" style="display:none;">
 <nav>
   <div class="nav-pill">
     <a href="#home" class="nav-link">Home</a>
@@ -522,6 +555,7 @@ footer span{color:var(--rose-deep);}
 </section>
 
 <footer>made with <span>♡</span> for you</footer>
+</div>
 
 <script>
 /* ============================================================
@@ -533,6 +567,16 @@ footer span{color:var(--rose-deep);}
 const CONFIG = {
   girlfriendName: "Holy G. Ahmed",   // her name — shown on the home page
   yourName: "Ali",                   // used for the letter signature
+
+  // --- Login (Sign in with Google) ---
+  // 1. Go to console.cloud.google.com -> create a project (free)
+  // 2. APIs & Services -> Credentials -> Create Credentials -> OAuth client ID -> "Web application"
+  // 3. Under "Authorized JavaScript origins" add the exact URL you'll host this site on
+  //    (e.g. https://yourname.netlify.app) — this MUST match where the file is hosted,
+  //    it will NOT work if you just double-click the file from your computer.
+  // 4. Copy the Client ID it gives you and paste it below.
+  googleClientId: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
+  allowedEmail: "her.email@gmail.com",   // only this Gmail address will be let in
 
   // --- Weather ---
   // The site will first try to use HER live location (with permission).
@@ -601,6 +645,52 @@ const CONFIG = {
 /* ============================================================
    End of editable section. Code below just makes it all work.
    ============================================================ */
+
+// ---------- Google sign-in gate ----------
+function decodeJwt(token){
+  try{
+    const base = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    return JSON.parse(decodeURIComponent(atob(base).split('').map(c =>
+      '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+  }catch(e){ return null; }
+}
+function unlockSite(){
+  document.getElementById('loginGate').style.display = 'none';
+  document.getElementById('siteContent').style.display = 'block';
+  document.getElementById('signOutBtn').style.display = 'block';
+}
+function handleCredentialResponse(response){
+  const payload = decodeJwt(response.credential);
+  const email = payload && payload.email ? payload.email.toLowerCase() : '';
+  const allowed = (CONFIG.allowedEmail || '').toLowerCase();
+  if(email && email === allowed){
+    saveLocal('forher_authed_email', email);
+    unlockSite();
+  } else {
+    document.getElementById('loginError').classList.add('show');
+  }
+}
+window.addEventListener('load', ()=>{
+  const remembered = loadLocal('forher_authed_email', null);
+  if(remembered && remembered === (CONFIG.allowedEmail || '').toLowerCase()){
+    unlockSite();
+    return;
+  }
+  if(window.google && google.accounts && google.accounts.id){
+    google.accounts.id.initialize({
+      client_id: CONFIG.googleClientId,
+      callback: handleCredentialResponse
+    });
+    google.accounts.id.renderButton(
+      document.getElementById('googleSignInDiv'),
+      { theme: 'outline', size: 'large', shape: 'pill', text: 'signin_with' }
+    );
+  }
+});
+document.getElementById('signOutBtn').addEventListener('click', ()=>{
+  try{ localStorage.removeItem('forher_authed_email'); }catch(e){}
+  location.reload();
+});
 
 // ---------- floating hearts & flowers ----------
 (function initFloaties(){
