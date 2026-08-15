@@ -417,6 +417,42 @@ h2{font-size:clamp(1.8rem,4vw,2.6rem);text-align:center;margin-bottom:10px;}
 .song-sub{color:var(--text-dim);font-size:0.78rem;line-height:1.4;}
 .playlist-embed{width:100%;border-radius:14px;overflow:hidden;margin-top:28px;border:1px solid var(--line);}
 
+/* ---------- study buddy (AI chat) ---------- */
+.chat-wrap{max-width:560px;padding:20px;}
+.chat-messages{
+  display:flex;flex-direction:column;gap:12px;
+  max-height:420px;overflow-y:auto;
+  padding:6px 4px 14px;
+}
+.chat-bubble{
+  max-width:80%;padding:11px 16px;border-radius:18px;
+  font-size:0.9rem;line-height:1.55;white-space:pre-wrap;
+}
+.chat-ai{
+  align-self:flex-start;background:var(--bg2);color:var(--text);
+  border-bottom-left-radius:4px;
+}
+.chat-user{
+  align-self:flex-end;background:linear-gradient(120deg,var(--rose),var(--rose-deep));
+  color:#fff;border-bottom-right-radius:4px;
+}
+.chat-typing{align-self:flex-start;background:var(--bg2);border-bottom-left-radius:4px;padding:13px 18px;display:flex;gap:4px;}
+.chat-typing span{width:6px;height:6px;border-radius:50%;background:var(--rose);animation:chatTyping 1.1s ease-in-out infinite;}
+.chat-typing span:nth-child(2){animation-delay:0.15s;}
+.chat-typing span:nth-child(3){animation-delay:0.3s;}
+@keyframes chatTyping{0%,60%,100%{opacity:0.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-3px);}}
+.chat-input-row{display:flex;gap:10px;border-top:1px solid var(--line);padding-top:14px;}
+.chat-input-row input{
+  flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);color:var(--text);
+  padding:11px 16px;border-radius:24px;font-family:var(--body);font-size:0.88rem;
+}
+.chat-input-row input:focus{outline:none;border-color:var(--rose);}
+.chat-input-row button{
+  background:var(--rose);border:none;color:#fff;padding:0 20px;border-radius:24px;
+  font-weight:500;cursor:pointer;font-family:var(--body);font-size:0.85rem;flex-shrink:0;
+}
+.chat-note{font-size:0.68rem;color:var(--text-dim);opacity:0.7;text-align:center;margin-top:12px;}
+
 /* ---------- gallery ---------- */
 .gallery-grid{
   display:grid;gap:34px 26px;width:100%;
@@ -637,8 +673,10 @@ footer span{color:var(--rose-deep);}
     <a href="#gallery" class="menu-link nav-link" data-page="gallery"><span class="menu-link-icon">📷</span>Us</a>
     <a href="#weather" class="menu-link nav-link" data-page="weather"><span class="menu-link-icon">🌤️</span>Weather</a>
     <a href="#study" class="menu-link nav-link" data-page="study"><span class="menu-link-icon">📚</span>Study</a>
+    <a href="#ai-helper" class="menu-link nav-link" data-page="ai-helper"><span class="menu-link-icon">✨</span>AI Helper</a>
     <a href="#reminders" class="menu-link nav-link" data-page="reminders"><span class="menu-link-icon">💗</span>Reminders</a>
     <a href="#music" class="menu-link nav-link" data-page="music"><span class="menu-link-icon">🎵</span>Music</a>
+    <a href="#study-ai" class="menu-link nav-link" data-page="study-ai"><span class="menu-link-icon">🤖</span>Study Buddy</a>
     <a href="#letter-section" class="menu-link nav-link" data-page="letter-section"><span class="menu-link-icon">💌</span>Letter</a>
   </div>
 </div>
@@ -714,6 +752,21 @@ footer span{color:var(--rose-deep);}
   <div id="playlistEmbedWrap"></div>
 </section>
 
+<!-- ================= STUDY BUDDY (AI) ================= -->
+<section id="study-ai">
+  <div class="eyebrow">Need a hand?</div>
+  <h2>Study Buddy</h2>
+  <p class="sub">Ask anything about her subjects — there's a little AI helper right here.</p>
+  <div class="chat-wrap card">
+    <div class="chat-messages" id="chatMessages"></div>
+    <form class="chat-input-row" id="chatForm">
+      <input type="text" id="chatInput" placeholder="Ask a question…" autocomplete="off">
+      <button type="submit" id="chatSendBtn">Send</button>
+    </form>
+    <p class="chat-note">AI-generated — answers can be wrong sometimes, so double-check anything important.</p>
+  </div>
+</section>
+
 <div class="lightbox" id="lightbox">
   <div class="lightbox-inner" onclick="event.stopPropagation()">
     <img id="lightboxImg" src="" alt="">
@@ -746,8 +799,8 @@ footer span{color:var(--rose-deep);}
    reopen for-her.html in your browser to see changes.
    ============================================================ */
 const CONFIG = {
-  girlfriendName: "Eli B.",   // her name — shown on the home page
-  yourName: "Wali",                   // used for the letter signature
+  girlfriendName: "Holy G. Ahmed",   // her name — shown on the home page
+  yourName: "Ali",                   // used for the letter signature
 
   // --- Login (email + password) ---
   // Simple lock screen — she enters this exact email + password to get in.
@@ -757,6 +810,30 @@ const CONFIG = {
   // not meant to protect anything sensitive.
   allowedEmail: "her.email@gmail.com",
   sitePassword: "changeme123",
+
+  // --- Study Buddy (AI chat) ---
+  // Powered by Claude (Anthropic). Needs your OWN API key to work — get a
+  // free one at console.anthropic.com -> API Keys.
+  // IMPORTANT — read this: since this is a plain static file with no
+  // server, the key you paste below sits inside this file's code. Anyone
+  // who opens "view source" on the hosted site could read and use it to
+  // rack up charges. Two things to do to keep that risk small:
+  //   1. At console.anthropic.com -> Settings -> Limits, set a low monthly
+  //      spending cap on this key (e.g. a few dollars).
+  //   2. Only share the site link with her — don't post it publicly. The
+  //      login screen already helps here since it keeps the site itself closed off.
+  aiApiKey: "YOUR_ANTHROPIC_API_KEY",
+  aiModel: "claude-haiku-4-5-20251001",
+  aiSystemPrompt: "You are a warm, patient study buddy helping a student prepare for exams. Give clear, accurate, encouraging answers. Keep responses fairly concise unless asked to go deeper.",
+
+  // --- AI Study Helper ---
+  // Get a free-to-start API key at console.anthropic.com/settings/keys
+  // (you'll add a small amount of credit — each question costs a fraction of a cent).
+  // Heads-up: same as the password above, this key is stored in plain text in
+  // the page's code, visible to anyone who views the source. Keep this site
+  // private/unlisted, and if you ever suspect the key leaked, revoke it in
+  // the Anthropic console and paste in a new one.
+  anthropicApiKey: "YOUR_ANTHROPIC_API_KEY_HERE",
 
   // --- Weather ---
   // The site will first try to use HER live location (with permission).
@@ -881,7 +958,7 @@ spawnFloaties('floaties', 26);
 spawnFloaties('loginFloaties', 24);
 
 // ---------- page routing (each nav item = its own page) ----------
-const PAGES = ['home','gallery','weather','study','reminders','music','letter-section'];
+const PAGES = ['home','gallery','weather','study','reminders','music','study-ai','letter-section'];
 const navLinks = document.querySelectorAll('.nav-link');
 const menuOverlay = document.getElementById('menuOverlay');
 function openMenu(){ menuOverlay.classList.add('show'); }
@@ -1259,6 +1336,89 @@ function renderMusic(){
   }
 }
 renderMusic();
+
+// ---------- study buddy (AI chat) ----------
+let chatHistory = loadLocal('forher_chat', []);
+const chatMessagesEl = document.getElementById('chatMessages');
+function renderChatHistory(){
+  chatMessagesEl.innerHTML = '';
+  if(chatHistory.length === 0){
+    appendChatBubble('ai', "Hi! Ask me anything about your studies 🎀");
+  } else {
+    chatHistory.forEach(m => appendChatBubble(m.role === 'user' ? 'user' : 'ai', m.content));
+  }
+}
+function appendChatBubble(role, text){
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble ' + (role === 'user' ? 'chat-user' : 'chat-ai');
+  bubble.textContent = text;
+  chatMessagesEl.appendChild(bubble);
+  chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+  return bubble;
+}
+function showTyping(){
+  const t = document.createElement('div');
+  t.className = 'chat-typing';
+  t.innerHTML = '<span></span><span></span><span></span>';
+  chatMessagesEl.appendChild(t);
+  chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+  return t;
+}
+async function sendChatMessage(text){
+  appendChatBubble('user', text);
+  chatHistory.push({ role: 'user', content: text });
+  const typingEl = showTyping();
+  document.getElementById('chatSendBtn').disabled = true;
+
+  if(!CONFIG.aiApiKey || CONFIG.aiApiKey === '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'){
+    typingEl.remove();
+    appendChatBubble('ai', "I don't have an API key set up yet — add one in CONFIG.aiApiKey to turn me on 💗");
+    document.getElementById('chatSendBtn').disabled = false;
+    return;
+  }
+
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': CONFIG.aiApiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: CONFIG.aiModel,
+        max_tokens: 700,
+        system: CONFIG.aiSystemPrompt,
+        messages: chatHistory.slice(-20)
+      })
+    });
+    const data = await res.json();
+    typingEl.remove();
+    if(data.content && data.content[0] && data.content[0].text){
+      const reply = data.content[0].text;
+      appendChatBubble('ai', reply);
+      chatHistory.push({ role: 'assistant', content: reply });
+    } else {
+      appendChatBubble('ai', "Hmm, I couldn't get an answer that time. " + (data.error && data.error.message ? data.error.message : "Try again in a moment."));
+    }
+  }catch(err){
+    typingEl.remove();
+    appendChatBubble('ai', "Couldn't reach the AI right now — check the connection and try again.");
+  }
+  chatHistory = chatHistory.slice(-20);
+  saveLocal('forher_chat', chatHistory);
+  document.getElementById('chatSendBtn').disabled = false;
+}
+renderChatHistory();
+document.getElementById('chatForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  sendChatMessage(text);
+});
 
 // ---------- gallery ----------
 function renderGallery(){
