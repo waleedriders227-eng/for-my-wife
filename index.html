@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500;1,600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://js.puter.com/v2/"></script>
 <style>
 
 /* ============================================================
@@ -564,12 +565,16 @@ footer span{color:var(--rose-deep);}
   .gallery-grid{grid-template-columns:repeat(2,1fr);gap:20px 14px;}
   .polaroid{padding:8px 8px 30px;}
   .polaroid-caption{font-size:0.8rem;bottom:8px;}
-  .music-grid{grid-template-columns:repeat(2,1fr);gap:14px;}
-  .song-card{padding:16px;}
-  .song-emoji{font-size:1.9rem;}
-  .song-title{font-size:0.85rem;}
-  .song-sub{font-size:0.68rem;}
-  .song-tag{font-size:0.55rem;padding:3px 9px;}
+  .music-grid{grid-template-columns:1fr;gap:10px;}
+  .song-card{
+    flex-direction:row;align-items:center;justify-content:flex-start;
+    text-align:left;aspect-ratio:auto;padding:12px 14px;gap:14px;
+  }
+  .song-emoji{font-size:1.8rem;flex-shrink:0;}
+  .song-text{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
+  .song-title{font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .song-sub{font-size:0.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .song-tag{order:3;flex-shrink:0;margin-left:auto;font-size:0.55rem;padding:3px 9px;}
   .weather-wrap{max-width:280px;gap:14px;}
   .weather-card{padding:20px 16px;}
   .weather-icon{font-size:2.6rem;}
@@ -812,18 +817,13 @@ const CONFIG = {
   sitePassword: "changeme123",
 
   // --- Study Buddy (AI chat) ---
-  // Powered by Claude (Anthropic). Needs your OWN API key to work — get a
-  // free one at console.anthropic.com -> API Keys.
-  // IMPORTANT — read this: since this is a plain static file with no
-  // server, the key you paste below sits inside this file's code. Anyone
-  // who opens "view source" on the hosted site could read and use it to
-  // rack up charges. Two things to do to keep that risk small:
-  //   1. At console.anthropic.com -> Settings -> Limits, set a low monthly
-  //      spending cap on this key (e.g. a few dollars).
-  //   2. Only share the site link with her — don't post it publicly. The
-  //      login screen already helps here since it keeps the site itself closed off.
-  aiApiKey: "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",
-  aiModel: "claude-haiku-4-5-20251001",
+  // Powered by Puter.js — completely free, no API key, no cost to you ever.
+  // The first time she sends a message, she'll see a quick free sign-in
+  // popup from Puter (just an email) — that's how it stays free for you,
+  // since each person covers their own tiny bit of usage.
+  // Model options include e.g. "gpt-5.4-nano" (fast, ChatGPT), "claude-sonnet-4-6",
+  // "gemini-2.5-flash" and many more — see docs.puter.com for the full list.
+  aiModel: "gpt-5.4-nano",
   aiSystemPrompt: "You are a warm, patient study buddy helping a student prepare for exams. Give clear, accurate, encouraging answers. Keep responses fairly concise unless asked to go deeper.",
 
   // --- AI Study Helper ---
@@ -1324,8 +1324,10 @@ function renderMusic(){
     <a class="song-card card" href="${s.url}" target="_blank" rel="noopener">
       <div class="song-tag">${isPlaylist ? 'Playlist' : 'Song'}</div>
       <div class="song-emoji">${isPlaylist ? '🎧' : '🎵'}</div>
-      <span class="song-title">${s.title}</span>
-      <span class="song-sub">${s.note || ''}</span>
+      <div class="song-text">
+        <span class="song-title">${s.title}</span>
+        <span class="song-sub">${s.note || ''}</span>
+      </div>
     </a>
   `;}).join('');
 
